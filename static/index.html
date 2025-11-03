@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de DNI - Perú</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Consulta de DNI - Perú</h1>
+            <p>Sistema para consultar información de DNI usando la API de ApisPeru</p>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>Instrucciones</h2>
+                <ol>
+                    <li>Descarga el formato de ejemplo para ver la estructura requerida</li>
+                    <li>Prepara tu archivo CSV con los DNI a consultar (un DNI por línea)</li>
+                    <li>Sube tu archivo para procesarlo</li>
+                    <li>Descarga los resultados con la información consultada</li>
+                </ol>
+            </div>
+            
+            <div class="actions">
+                <button id="descargarFormato" class="btn btn-primary">
+                    📥 Descargar Formato
+                </button>
+                
+                <div class="upload-section">
+                    <h3>Subir archivo con DNIs</h3>
+                    <input type="file" id="archivoDnis" accept=".csv,.txt">
+                    <button id="procesar" class="btn btn-secondary" disabled>
+                    🔄 Procesar DNIs
+                    </button>
+                    <div id="progreso" class="progreso" style="display: none;">
+                        <div class="barra-progreso">
+                            <div class="progreso-llenado"></div>
+                        </div>
+                        <span class="texto-progreso">Procesando...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="mensajes" class="mensajes"></div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 Consulta DNI Perú</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
