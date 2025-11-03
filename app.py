@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Configuración
-TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im1pZ3VlbGFuZ2VsZ3V6bWFuaHVhbWFuNEBnbWFpbC5jb20ifQ.mVumiO3Dp2Km9U8CjMFqOhSfPOSsOTYgNjZZEy3M-EQ"
+TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRnMzQ5NDgxQGdtYWlsLmNvbSJ9.J4NYeuRupn5cZw8EsqjC01D0hNpTkQgKt1cp5Wri8Rw"
 TIEMPO_ESPERA = 0.5  # Reducido a 0.5 segundos
 MAX_DNIS = 500
 WORKERS = 5  # Número de hilos paralelos
