@@ -4,12 +4,16 @@ import time
 import csv
 import os
 import io
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Configuración
 TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im1pZ3VlbGFuZ2VsZ3V6bWFuaHVhbWFuNEBnbWFpbC5jb20ifQ.mVumiO3Dp2Km9U8CjMFqOhSfPOSsOTYgNjZZEy3M-EQ"
-TIEMPO_ESPERA = 1
+TIEMPO_ESPERA = 0.5  # Reducido a 0.5 segundos
+MAX_DNIS = 500
+WORKERS = 5  # Número de hilos paralelos
 
 
 def consultar_dni(dni):
@@ -46,6 +50,33 @@ def consultar_dni(dni):
         }
 
 
+def procesar_lote(dnis_lote):
+    """Procesa un lote de DNIs en paralelo"""
+    resultados = []
+    with ThreadPoolExecutor(max_workers=WORKERS) as executor:
+        # Enviar todas las consultas
+        futures = {executor.submit(consultar_dni, dni)                   : dni for dni in dnis_lote}
+
+        # Recolectar resultados a medida que terminan
+        for future in as_completed(futures):
+            try:
+                resultado = future.result()
+                resultados.append(resultado)
+            except Exception as e:
+                dni = futures[future]
+                resultados.append({
+                    'dni': dni,
+                    'nombres': '',
+                    'apellidoPaterno': '',
+                    'apellidoMaterno': '',
+                    'codVerifica': '',
+                    'error': str(e)
+                })
+            time.sleep(TIEMPO_ESPERA)  # Pequeña pausa entre consultas
+
+    return resultados
+
+
 @app.route('/')
 def serve_index():
     try:
@@ -77,17 +108,20 @@ def procesar_dnis():
         content = file.read().decode('utf-8-sig')
         dnis = [line.strip() for line in content.splitlines() if line.strip()]
 
-        # Limitar cantidad de DNIs para evitar timeout
-        if len(dnis) > 50:
-            return jsonify({'error': 'Máximo 50 DNIs por archivo'}), 400
+        # 🔥 Aumentado a 500 DNIs
+        if len(dnis) > MAX_DNIS:
+            return jsonify({'error': f'Máximo {MAX_DNIS} DNIs permitidos. Tu archivo tiene {len(dnis)} DNIs.'}), 400
 
-        # Procesar DNIs
+        # Procesar en lotes más pequeños
+        tamaño_lote = 50
+        lotes = [dnis[i:i + tamaño_lote]
+                 for i in range(0, len(dnis), tamaño_lote)]
+
         resultados = []
-        for i, dni in enumerate(dnis, 1):
-            print(f"Procesando {i}/{len(dnis)}: DNI {dni}")
-            resultado = consultar_dni(dni)
-            resultados.append(resultado)
-            time.sleep(TIEMPO_ESPERA)
+        for i, lote in enumerate(lotes, 1):
+            print(f"Procesando lote {i}/{len(lotes)} - {len(lote)} DNIs")
+            resultados_lote = procesar_lote(lote)
+            resultados.extend(resultados_lote)
 
         # Crear archivo CSV en memoria
         output = io.StringIO()
@@ -106,6 +140,7 @@ def procesar_dnis():
         )
 
     except Exception as e:
+        print(f"Error general: {str(e)}")
         return jsonify({'error': f'Error procesando archivo: {str(e)}'}), 500
 
 
